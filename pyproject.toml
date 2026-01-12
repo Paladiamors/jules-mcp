@@ -1,0 +1,21 @@
+[project]
+name = "jules-mcp-server"
+version = "0.1.0"
+description = "MCP server for Google Jules API"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]",
+    "httpx",
+    "pydantic",
+]
+
+[project.scripts]
+jules-mcp-server = "main:mcp.run"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["client", "models", "main"]
