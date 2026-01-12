@@ -81,7 +81,8 @@ async def list_sessions(
     sessions = response.sessions
     if active_only:
         sessions = [
-            s for s in sessions
+            s
+            for s in sessions
             if s.state not in (SessionState.COMPLETED, SessionState.FAILED)
         ]
 
