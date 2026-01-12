@@ -44,7 +44,7 @@ async def create_session(source: str, user_prompt: str) -> Dict[str, Any]:
         user_prompt: The initial instruction or prompt for the session.
 
     Returns:
-        The created session object.
+        The created session object, including its resource name, ID, and initial state.
     """
     logger.info(f"Executing create_session with source='{source}'")
     try:
@@ -75,7 +75,7 @@ async def list_sessions(order_by_recent: bool = True, active_only: bool = True) 
         raise
 
 @mcp.tool()
-async def send_message(session_name: str, message: str) -> Dict[str, Any]:
+async def send_message(session_name: str, message: str) -> str:
     """
     Follow up in an active session with a message.
 
@@ -84,12 +84,12 @@ async def send_message(session_name: str, message: str) -> Dict[str, Any]:
         message: The message content to send.
 
     Returns:
-        The response from the API.
+        A confirmation string. Use get_activities to see the agent's response.
     """
     logger.info(f"Executing send_message for session='{session_name}'")
     try:
-        result = await client.send_message(session_name, message)
-        return result
+        await client.send_message(session_name, message)
+        return "Message sent successfully. Call get_activities to view the response."
     except Exception as e:
         logger.error(f"Error in send_message: {e}")
         raise
@@ -122,7 +122,8 @@ async def get_activities(session_name: str) -> List[Dict[str, Any]]:
         session_name: The resource name of the session.
 
     Returns:
-        A list of activity objects associated with the session.
+        A list of activity objects associated with the session. Each activity contains details such as
+        agent messages, user messages, generated plans, or progress updates.
     """
     logger.info(f"Executing get_activities for session='{session_name}'")
     try:

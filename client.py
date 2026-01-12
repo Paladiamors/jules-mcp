@@ -29,7 +29,6 @@ class JulesClient:
         """
         Fetches available repositories (sources).
         """
-        # Note: No leading slash
         resp = await self.client.get("sources")
         resp.raise_for_status()
         data = resp.json()
@@ -43,9 +42,12 @@ class JulesClient:
             source: The resource name of the source repository.
             user_prompt: The initial prompt from the user.
         """
+        # Correctly structure the body as a Session instance
         body = {
-            "source": source,
-            "userPrompt": user_prompt
+            "sourceContext": {
+                "source": source
+            },
+            "prompt": user_prompt
         }
         resp = await self.client.post("sessions", json=body)
         resp.raise_for_status()
@@ -72,7 +74,7 @@ class JulesClient:
         data = resp.json()
         return [Session(**item) for item in data.get("sessions", [])]
 
-    async def send_message(self, session_name: str, message: str) -> Any:
+    async def send_message(self, session_name: str, message: str) -> None:
         """
         Sends a message to an active session.
 
@@ -80,14 +82,11 @@ class JulesClient:
             session_name: The resource name of the session.
             message: The message content.
         """
-        # Ensure session_name doesn't duplicate the path if it already contains it,
-        # but here we rely on the API returning full resource names like "sessions/uuid".
-        # The base URL is .../v1alpha/, so we append {session_name}:sendMessage
         url = f"{session_name}:sendMessage"
-        body = {"message": message}
+        body = {"prompt": message}
         resp = await self.client.post(url, json=body)
         resp.raise_for_status()
-        return resp.json()
+        # Response body is empty on success
 
     async def approve_plan(self, session_name: str) -> Any:
         """
