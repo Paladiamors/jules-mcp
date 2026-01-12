@@ -1,7 +1,8 @@
 import os
 import httpx
 from typing import List, Optional, Dict, Any
-from models import Session, Source, Activity
+from datetime import datetime
+from models import Session, Source, Activity, SessionState
 
 class JulesClient:
     """
@@ -61,18 +62,29 @@ class JulesClient:
             order_by_recent: If True, sort by createTime desc.
             active_only: If True, exclude COMPLETED and FAILED sessions.
         """
-        params = {}
-        if order_by_recent:
-            params["orderBy"] = "createTime desc"
-
-        if active_only:
-            # constructing filter
-            params["filter"] = 'state != "COMPLETED" AND state != "FAILED"'
-
-        resp = await self.client.get("sessions", params=params)
+        # The API does not support server-side filtering or sorting for sessions.list.
+        # We must fetch all sessions and filter/sort client-side.
+        resp = await self.client.get("sessions")
         resp.raise_for_status()
         data = resp.json()
-        return [Session(**item) for item in data.get("sessions", [])]
+
+        sessions = [Session(**item) for item in data.get("sessions", [])]
+
+        if active_only:
+            sessions = [
+                s for s in sessions
+                if s.state not in (SessionState.COMPLETED, SessionState.FAILED)
+            ]
+
+        if order_by_recent:
+            # Sort by createTime descending. Handle None createTime just in case.
+            # createTime is a datetime object thanks to Pydantic.
+            sessions.sort(
+                key=lambda s: s.createTime or datetime.min,
+                reverse=True
+            )
+
+        return sessions
 
     async def send_message(self, session_name: str, message: str) -> None:
         """
