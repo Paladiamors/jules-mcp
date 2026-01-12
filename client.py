@@ -8,7 +8,9 @@ class JulesClient:
     Async client for the Google Jules API.
     """
     def __init__(self):
-        self.base_url = "https://jules.googleapis.com/v1alpha"
+        # httpx treats base_url with trailing slash as a directory,
+        # so relative paths (without leading slash) will be appended correctly.
+        self.base_url = "https://jules.googleapis.com/v1alpha/"
         self.api_key = os.environ.get("JULES_API_KEY")
 
         self.headers = {
@@ -27,7 +29,8 @@ class JulesClient:
         """
         Fetches available repositories (sources).
         """
-        resp = await self.client.get("/sources")
+        # Note: No leading slash
+        resp = await self.client.get("sources")
         resp.raise_for_status()
         data = resp.json()
         return [Source(**item) for item in data.get("sources", [])]
@@ -44,7 +47,7 @@ class JulesClient:
             "source": source,
             "userPrompt": user_prompt
         }
-        resp = await self.client.post("/sessions", json=body)
+        resp = await self.client.post("sessions", json=body)
         resp.raise_for_status()
         return Session(**resp.json())
 
@@ -64,7 +67,7 @@ class JulesClient:
             # constructing filter
             params["filter"] = 'state != "COMPLETED" AND state != "FAILED"'
 
-        resp = await self.client.get("/sessions", params=params)
+        resp = await self.client.get("sessions", params=params)
         resp.raise_for_status()
         data = resp.json()
         return [Session(**item) for item in data.get("sessions", [])]
@@ -79,8 +82,8 @@ class JulesClient:
         """
         # Ensure session_name doesn't duplicate the path if it already contains it,
         # but here we rely on the API returning full resource names like "sessions/uuid".
-        # The base URL is .../v1alpha, so we append /{session_name}:sendMessage
-        url = f"/{session_name}:sendMessage"
+        # The base URL is .../v1alpha/, so we append {session_name}:sendMessage
+        url = f"{session_name}:sendMessage"
         body = {"message": message}
         resp = await self.client.post(url, json=body)
         resp.raise_for_status()
@@ -93,7 +96,7 @@ class JulesClient:
         Args:
             session_name: The resource name of the session.
         """
-        url = f"/{session_name}:approvePlan"
+        url = f"{session_name}:approvePlan"
         resp = await self.client.post(url, json={})
         resp.raise_for_status()
         return resp.json()
@@ -105,7 +108,7 @@ class JulesClient:
         Args:
             session_name: The resource name of the session.
         """
-        url = f"/{session_name}/activities"
+        url = f"{session_name}/activities"
         resp = await self.client.get(url)
         resp.raise_for_status()
         data = resp.json()
