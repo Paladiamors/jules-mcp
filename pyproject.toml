@@ -1,0 +1,11 @@
+[project]
+name = "jules-mcp-server"
+version = "0.1.0"
+description = "MCP server for Google Jules API - Create sessions, send messages, and manage coding tasks"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp>=2.0.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.0.0",
+]
