@@ -94,11 +94,12 @@ class JulesClient:
         branch: Optional[str] = None,
         title: Optional[str] = None,
         require_plan_approval: bool = False,
+        automation_mode: Optional[str] = None,
     ) -> Session:
         """Create a new session."""
         source_context = {"source": source}
         if branch:
-            source_context["branch"] = branch
+            source_context["githubRepoContext"] = {"startingBranch": branch}
 
         body = {
             "prompt": prompt,
@@ -108,6 +109,8 @@ class JulesClient:
             body["title"] = title
         if require_plan_approval:
             body["requirePlanApproval"] = require_plan_approval
+        if automation_mode:
+            body["automationMode"] = automation_mode
 
         async with httpx.AsyncClient() as client:
             response = await client.post(

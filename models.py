@@ -23,8 +23,7 @@ class AutomationMode(str, Enum):
     """Automation mode enum."""
 
     AUTOMATION_MODE_UNSPECIFIED = "AUTOMATION_MODE_UNSPECIFIED"
-    FULLY_AUTOMATIC = "FULLY_AUTOMATIC"
-    SEMI_AUTOMATIC = "SEMI_AUTOMATIC"
+    AUTO_CREATE_PR = "AUTO_CREATE_PR"
 
 
 class Branch(BaseModel):
@@ -58,13 +57,21 @@ class ListSourcesResponse(BaseModel):
     next_page_token: Optional[str] = Field(None, alias="nextPageToken")
 
 
+class GitHubRepoContext(BaseModel):
+    """GitHub repo context for specifying branch."""
+
+    starting_branch: Optional[str] = Field(None, alias="startingBranch")
+
+
 class SourceContext(BaseModel):
     """Source context for creating a session."""
 
     source: str = Field(
         ..., description="Resource name of the source (e.g., sources/github/owner/repo)"
     )
-    branch: Optional[str] = Field(None, description="Branch name to use")
+    github_repo_context: Optional[GitHubRepoContext] = Field(
+        None, alias="githubRepoContext"
+    )
 
 
 class PullRequest(BaseModel):
