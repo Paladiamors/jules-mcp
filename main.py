@@ -5,7 +5,7 @@ from typing import Optional
 from fastmcp import FastMCP
 
 from client import JulesClient
-from models import SessionState
+from models import AutomationMode, SessionState
 
 # Initialize FastMCP server
 mcp = FastMCP(
@@ -115,6 +115,7 @@ async def create_session(
     branch: Optional[str] = None,
     title: Optional[str] = None,
     require_plan_approval: bool = False,
+    automation_mode: str = AutomationMode.AUTO_CREATE_PR,
 ) -> dict:
     """
     Create a new Jules session to work on a coding task.
@@ -125,6 +126,11 @@ async def create_session(
         branch: Optional branch name to use (defaults to repository default branch)
         title: Optional title for the session (auto-generated if not provided)
         require_plan_approval: If True, Jules will wait for plan approval before executing
+        automation_mode: Controls how Jules handles the output of the session.
+            "AUTO_CREATE_PR" (default) - Jules will automatically create a pull request
+            with the changes when the session completes.
+            "AUTOMATION_MODE_UNSPECIFIED" - No automatic PR creation; Jules will complete
+            the session without creating a PR.
 
     Returns:
         Created session details including ID, state, and URL to view progress
@@ -136,6 +142,7 @@ async def create_session(
         branch=branch,
         title=title,
         require_plan_approval=require_plan_approval,
+        automation_mode=automation_mode,
     )
     return response.model_dump(by_alias=True, exclude_none=True)
 
@@ -239,6 +246,7 @@ async def create_pull_request(
         branch=branch,
         title=title,
         require_plan_approval=False,
+        automation_mode=AutomationMode.AUTO_CREATE_PR,
     )
     return response.model_dump(by_alias=True, exclude_none=True)
 
